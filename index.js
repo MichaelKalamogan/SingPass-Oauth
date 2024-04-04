@@ -130,7 +130,7 @@ app.post("/verify", async function (req, res) {
   }
 });
 
-app.get("ping", (req, res) => {
+app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
