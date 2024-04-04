@@ -53,7 +53,8 @@ app.get("/auth", (req, res) => {
   if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `${process.env.SINGPASS_ENVIRONMENT}${req.url}&cient_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+  var url = `${process.env.SINGPASS_ENVIRONMENT}${req.url}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+  console.log(url);
   res.redirect(url);
 });
 
@@ -71,7 +72,7 @@ app.post("/token", async function (req, res) {
     const client_assertion = await generatePrivateKeyJWT(context.data);
     var options = {
       method: "POST",
-      url: `${process.env.SINGPASS_ENVIRONMENT}/token`,
+      url: `https://id.singpass.gov.sg/token`,
       headers: { "content-type": "application/x-www-form-urlencoded" },
       data: qs.stringify({
         grant_type: "authorization_code",
