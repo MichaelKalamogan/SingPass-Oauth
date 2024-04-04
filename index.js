@@ -8,7 +8,7 @@ const axios = require("axios").default;
 const qs = require("qs");
 const dotenv = require("dotenv");
 const PORT = process.env.PORT || 5000;
-
+require("dotenv").config();
 var app = express();
 
 app.use(bodyParser.json());
@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(function (req, res, next) {
   req.webtaskContext = {};
-  const result = dotenv.config();
+  const result = process.env;
 
   if (result.error) {
     throw result.error;
