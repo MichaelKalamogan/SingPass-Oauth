@@ -16,16 +16,16 @@ const PORT = process.env.PORT || 6000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(function (req, res, next) {
-  req.webtaskContext = {};
-  const result = dotenv.config();
+// app.use(function (req, res, next) {
+//   req.webtaskContext = {};
+//   const result = dotenv.config();
 
-  if (result.error) {
-    throw result.error;
-  }
-  req.webtaskContext.data = result.parsed;
-  next();
-});
+//   if (result.error) {
+//     throw result.error;
+//   }
+//   req.webtaskContext.data = result.parsed;
+//   next();
+// });
 
 app.get("/authorize", (req, res) => {
   const context = req.webtaskContext;
