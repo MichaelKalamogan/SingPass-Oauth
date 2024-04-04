@@ -130,6 +130,10 @@ app.post("/verify", async function (req, res) {
   }
 });
 
+app.get("ping", (req, res) {
+    res.send('pong')
+})
+
 async function loadPrivateKey(config) {
   try {
     const response = await axios.get(config.RELYING_PARTY_JWKS_ENDPOINT);
