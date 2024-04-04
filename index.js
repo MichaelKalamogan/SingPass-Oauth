@@ -53,7 +53,7 @@ app.get("/auth", (req, res) => {
   if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `${process.env.SINGPASS_ENVIRONMENT}${req.url}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+  var url = `https://id.singpass.gov.sg${req.url}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
   console.log(url);
   res.redirect(url);
 });
