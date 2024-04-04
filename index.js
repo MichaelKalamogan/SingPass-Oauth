@@ -54,7 +54,9 @@ app.post("/token", async function (req, res) {
     const client_assertion = await generatePrivateKeyJWT(context.data);
     var options = {
       method: "POST",
-      url: `${context.data.SINGPASS_ENVIRONMENT}/token`,
+      url: `${
+        process.env.SINGPASS_ENVIRONMENT || context.data.SINGPASS_ENVIRONMENT
+      }/token`,
       headers: { "content-type": "application/x-www-form-urlencoded" },
       data: qs.stringify({
         grant_type: "authorization_code",
