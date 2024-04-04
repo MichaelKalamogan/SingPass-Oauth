@@ -6,9 +6,6 @@ const { jwtVerify } = require("jose/jwt/verify");
 const uuid = require("uuid");
 const axios = require("axios").default;
 const qs = require("qs");
-const dotenv = require("dotenv");
-
-require("dotenv").config();
 
 const PORT = process.env.PORT || 6000;
 
