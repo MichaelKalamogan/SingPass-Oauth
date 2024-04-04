@@ -33,10 +33,10 @@ app.get("/authorize", (req, res) => {
   if (!req.query.client_id) {
     return res.send(400, "missing client_id");
   }
-  if (context.data.AUTH0_CLIENT_ID !== req.query.client_id) {
+  if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `https://${context.data.AUTH0_CUSTOM_DOMAIN}${req.url}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
+  var url = `https://${process.env.AUTH0_CUSTOM_DOMAIN}${req.url}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
   res.redirect(url);
 });
 
@@ -49,10 +49,10 @@ app.get("/auth", (req, res) => {
   if (!req.query.client_id) {
     return res.send(400, "missing client_id");
   }
-  if (context.data.AUTH0_CLIENT_ID !== req.query.client_id) {
+  if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `${context.data.SINGPASS_ENVIRONMENT}${req.url}&cient_id=${context.data.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+  var url = `${process.env.SINGPASS_ENVIRONMENT}${req.url}&cient_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
   res.redirect(url);
 });
 
@@ -64,19 +64,17 @@ app.post("/token", async function (req, res) {
     return res.send(400, "missing client_id / client_secret");
   }
   if (
-    context.data.AUTH0_CLIENT_ID === client_id &&
-    context.data.AUTH0_CLIENT_SECRET === client_secret
+    process.env.AUTH0_CLIENT_ID === client_id &&
+    process.env.AUTH0_CLIENT_SECRET === client_secret
   ) {
     const client_assertion = await generatePrivateKeyJWT(context.data);
     var options = {
       method: "POST",
-      url: `${
-        process.env.SINGPASS_ENVIRONMENT || context.data.SINGPASS_ENVIRONMENT
-      }/token`,
+      url: `${process.env.SINGPASS_ENVIRONMENT}/token`,
       headers: { "content-type": "application/x-www-form-urlencoded" },
       data: qs.stringify({
         grant_type: "authorization_code",
-        client_id: context.data.SINGPASS_CLIENT_ID,
+        client_id: process.env.SINGPASS_CLIENT_ID,
         client_assertion_type:
           "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
         client_assertion: client_assertion,
