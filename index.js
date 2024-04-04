@@ -17,11 +17,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
   req.webtaskContext = {};
   const result = process.env;
-
+  console.log(result);
   if (result.error) {
     throw result.error;
   }
   req.webtaskContext.data = result.parsed;
+  console.log(result.parsed);
   next();
 });
 
@@ -148,10 +149,10 @@ app.post("/verify", async function (req, res) {
 
 async function loadPrivateKey(config) {
   try {
-    const response = await axios.get(config.RELYING_PARTY_JWKS_ENDPOINT);
+    const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     const { keys } = response.data;
-    keys[0].d = config.RELYING_PARTY_PRIVATE_KEY;
-    return await parseJwk(keys[0], config.SINGPASS_SIGNING_ALG);
+    keys[0].d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    return await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     return e;
   }
@@ -160,9 +161,12 @@ async function loadPrivateKey(config) {
 async function loadPublicKey(config) {
   try {
     const response = await axios.get(
-      `${config.SINGPASS_ENVIRONMENT}/.well-known/keys`,
+      `${process.env.SINGPASS_ENVIRONMENT}/.well-known/keys`,
     );
-    return await parseJwk(response.data.keys[0], config.SINGPASS_SIGNING_ALG);
+    return await parseJwk(
+      response.data.keys[0],
+      process.env.SINGPASS_SIGNING_ALG,
+    );
   } catch (e) {
     return e;
   }
@@ -173,14 +177,14 @@ async function generatePrivateKeyJWT(config) {
   const key = await loadPrivateKey(config);
   const jwt = await new SignJWT({})
     .setProtectedHeader({
-      alg: config.SINGPASS_SIGNING_ALG,
-      kid: config.RELYING_PARTY_KID,
+      alg: process.env.SINGPASS_SIGNING_ALG,
+      kid: process.env.RELYING_PARTY_KID,
       typ: "JWT",
     })
     .setIssuedAt()
-    .setIssuer(config.SINGPASS_CLIENT_ID)
-    .setSubject(config.SINGPASS_CLIENT_ID)
-    .setAudience(config.SINGPASS_ENVIRONMENT)
+    .setIssuer(process.env.SINGPASS_CLIENT_ID)
+    .setSubject(process.env.SINGPASS_CLIENT_ID)
+    .setAudience(process.env.SINGPASS_ENVIRONMENT)
     .setExpirationTime("2m") // NDI will not accept tokens with an exp longer than 2 minutes since iat.
     .setJti(uuid.v4())
     .sign(key);
