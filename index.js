@@ -92,6 +92,7 @@ app.post("/token", async function (req, res) {
       };
 
       try {
+        console.log("making request");
         const response = await axios.request(options);
         console.log("response", response.data);
         const { id_token } = response.data;
@@ -120,6 +121,7 @@ app.post("/token", async function (req, res) {
           return res.status(200).send(response.data);
         }
       } catch (error) {
+        console.log(error);
         if (error.response) {
           return res.status(error.response.status).send(error.response.data);
         } else {
@@ -164,10 +166,7 @@ async function loadPrivateKey() {
   try {
     // const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     const dataObj = eopPublicKey;
-    console.log("dataobj", typeof dataObj);
-    console.log("dataobjvalue", dataObj);
     dataObj.d = process.env.RELYING_PARTY_PRIVATE_KEY;
-    console.log("response", dataObj);
     return await parseJwk(dataObj, process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
@@ -185,6 +184,7 @@ async function loadPublicKey() {
       process.env.SINGPASS_SIGNING_ALG
     );
   } catch (e) {
+    console.log(e);
     return e;
   }
 }
