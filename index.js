@@ -30,17 +30,6 @@ app.use(function (req, res, next) {
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
-app.get("/authorize", (req, res) => {
-  const context = req.webtaskContext;
-  if (!req.query.client_id) {
-    return res.send(400, "missing client_id");
-  }
-  if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
-    return res.send(401, "invalid client_id");
-  }
-  var url = `https://${process.env.AUTH0_CUSTOM_DOMAIN}${req.url}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
-  res.redirect(url);
-});
 
 /**
  * /auth is for redirect based flow which is the recommended method now
@@ -171,10 +160,10 @@ app.post("/verify", async function (req, res) {
 async function loadPrivateKey() {
   try {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
-    console.log("response", response);
     // const { keys } = response.data;
-    response.d = process.env.RELYING_PARTY_PRIVATE_KEY;
-    return await parseJwk(response, process.env.SINGPASS_SIGNING_ALG);
+    response.data.d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    console.log("response", response.data);
+    return await parseJwk(response.data, process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
     return e;
