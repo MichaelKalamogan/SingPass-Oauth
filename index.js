@@ -184,7 +184,7 @@ async function loadPrivateKey(config) {
 async function loadPublicKey(config) {
   try {
     const response = await axios.get(
-      `${process.env.SINGPASS_ENVIRONMENT}/.well-known/keys`,
+      `https://id.singpass.gov.sg/.well-known/keys`,
     );
     return await parseJwk(
       response.data.keys[0],
