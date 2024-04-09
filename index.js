@@ -76,7 +76,8 @@ app.post("/token", async function (req, res) {
       process.env.AUTH0_CLIENT_SECRET === client_secret
     ) {
       const client_assertion = await generatePrivateKeyJWT();
-      var options = {
+      console.log("client_assertion", client_assertion);
+      const options = {
         method: "POST",
         url: `https://id.singpass.gov.sg/token`,
         headers: { "content-type": "application/x-www-form-urlencoded" },
