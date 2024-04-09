@@ -47,30 +47,35 @@ app.get("/authorize", (req, res) => {
  * note that we probably don't need a new endpoint for redirection since it can all happen with Auth0's native upstream idp parameter mapping.
  */
 app.get("/auth", (req, res) => {
-  if (!req.query.client_id) {
-    return res.send(400, "missing client_id");
+  try {
+    if (!req.query.client_id) {
+      return res.send(400, "missing client_id");
+    }
+    if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
+      return res.send(401, "invalid client_id");
+    }
+
+    // Parse the URL
+    const urlObj = new URL(req.url, "https://id.singpass.gov.sg");
+
+    // Remove the client_id parameter
+    urlObj.searchParams.delete("client_id");
+
+    // Reconstruct the URL without the client_id parameter
+    const modifiedUrl = urlObj.toString();
+
+    const url = `${modifiedUrl}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+    res.redirect(url);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error.message);
   }
-  if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
-    return res.send(401, "invalid client_id");
-  }
-
-  // Parse the URL
-  const urlObj = new URL(req.url, "https://id.singpass.gov.sg");
-
-  // Remove the client_id parameter
-  urlObj.searchParams.delete("client_id");
-
-  // Reconstruct the URL without the client_id parameter
-  const modifiedUrl = urlObj.toString();
-
-  const url = `${modifiedUrl}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
-  console.log(url);
-  res.redirect(url);
 });
 
 app.post("/token", async function (req, res) {
   try {
     const context = req.webtaskContext;
+    console.log("contextdata", context.data);
     const { client_id, client_secret, code, code_verifier, redirect_uri } =
       req.body;
     if (!client_id || !client_secret) {
@@ -97,6 +102,7 @@ app.post("/token", async function (req, res) {
       };
       try {
         const response = await axios.request(options);
+        console.log("response", response.data);
         const { id_token } = response.data;
         const publicKey = await loadPublicKey(context.data);
         const code_v = new TextEncoder().encode(code_verifier);
@@ -170,6 +176,7 @@ async function loadPrivateKey(config) {
     keys[0].d = process.env.RELYING_PARTY_PRIVATE_KEY;
     return await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
+    console.log(e);
     return e;
   }
 }
