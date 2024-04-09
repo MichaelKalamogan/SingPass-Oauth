@@ -53,8 +53,7 @@ app.get("/auth", (req, res) => {
   if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `https://id.singpass.gov.sg${req.url}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
-  console.log(url);
+  var url = `https://id.singpass.gov.sg/${req.url}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
   res.redirect(url);
 });
 
@@ -89,7 +88,7 @@ app.post("/token", async function (req, res) {
       const { id_token } = response.data;
       const publicKey = await loadPublicKey(context.data);
       const code_v = new TextEncoder().encode(code_verifier);
-      const code_v_s256 = ccrypto
+      const code_v_s256 = crypto
         .createHash("sha256")
         .update(code_v)
         .digest("base64")
