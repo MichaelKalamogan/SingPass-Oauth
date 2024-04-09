@@ -52,6 +52,8 @@ app.get("/auth", (req, res) => {
     return res.send(400, "missing client_id");
   }
   if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
+    console.log(process.env.AUTH0_CLIENT_ID);
+    console.log(req.query.client_id);
     return res.send(401, "invalid client_id");
   }
   const url = `https://id.singpass.gov.sg${req.url}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
