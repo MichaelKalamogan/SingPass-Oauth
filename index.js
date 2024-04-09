@@ -9,7 +9,6 @@ const axios = require("axios").default;
 const qs = require("qs");
 const dotenv = require("dotenv");
 const PORT = process.env.PORT || 5000;
-require("dotenv").config();
 var app = express();
 
 app.use(bodyParser.json());
@@ -17,8 +16,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(function (req, res, next) {
   req.webtaskContext = {};
-  const result = process.env;
-
+  const result = dotenv.config();
+  console.log("result", result);
   if (result.error) {
     throw result.error;
   }
@@ -74,8 +73,6 @@ app.get("/auth", (req, res) => {
 
 app.post("/token", async function (req, res) {
   try {
-    const context = req.webtaskContext;
-    console.log("contextdata", context.data);
     const { client_id, client_secret, code, code_verifier, redirect_uri } =
       req.body;
     if (!client_id || !client_secret) {
@@ -85,7 +82,7 @@ app.post("/token", async function (req, res) {
       process.env.AUTH0_CLIENT_ID === client_id &&
       process.env.AUTH0_CLIENT_SECRET === client_secret
     ) {
-      const client_assertion = await generatePrivateKeyJWT(context.data);
+      const client_assertion = await generatePrivateKeyJWT();
       var options = {
         method: "POST",
         url: `https://id.singpass.gov.sg/token`,
@@ -100,11 +97,12 @@ app.post("/token", async function (req, res) {
           redirect_uri: redirect_uri,
         }),
       };
+
       try {
         const response = await axios.request(options);
         console.log("response", response.data);
         const { id_token } = response.data;
-        const publicKey = await loadPublicKey(context.data);
+        const publicKey = await loadPublicKey();
         const code_v = new TextEncoder().encode(code_verifier);
         const code_v_s256 = crypto
           .createHash("sha256")
@@ -169,7 +167,7 @@ app.post("/verify", async function (req, res) {
   }
 });
 
-async function loadPrivateKey(config) {
+async function loadPrivateKey() {
   try {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     const { keys } = response.data;
@@ -181,7 +179,7 @@ async function loadPrivateKey(config) {
   }
 }
 
-async function loadPublicKey(config) {
+async function loadPublicKey() {
   try {
     const response = await axios.get(
       `https://id.singpass.gov.sg/.well-known/keys`,
@@ -195,9 +193,9 @@ async function loadPublicKey(config) {
   }
 }
 
-async function generatePrivateKeyJWT(config) {
+async function generatePrivateKeyJWT() {
   //const privateKeyPEM = crypto.createPrivateKey(config.PRIVATE_KEY.replace(/\\n/gm, '\n'));
-  const key = await loadPrivateKey(config);
+  const key = await loadPrivateKey();
   const jwt = await new SignJWT({})
     .setProtectedHeader({
       alg: process.env.SINGPASS_SIGNING_ALG,
