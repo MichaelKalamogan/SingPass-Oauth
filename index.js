@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(function (req, res, next) {
   req.webtaskContext = {};
-  const result = dotenv.config();
+  const result = dotenv.config({ path: path.join(__dirname, ".env") });
   console.log("result", result);
   if (result.error) {
     throw result.error;
@@ -28,17 +28,6 @@ app.use(function (req, res, next) {
 
 app.get("/ping", (req, res) => {
   res.send("pong");
-});
-app.get("/authorize", (req, res) => {
-  const context = req.webtaskContext;
-  if (!req.query.client_id) {
-    return res.send(400, "missing client_id");
-  }
-  if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
-    return res.send(401, "invalid client_id");
-  }
-  var url = `https://${process.env.AUTH0_CUSTOM_DOMAIN}${req.url}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
-  res.redirect(url);
 });
 
 /**
@@ -100,7 +89,6 @@ app.post("/token", async function (req, res) {
 
       try {
         const response = await axios.request(options);
-        console.log("response", response.data);
         const { id_token } = response.data;
         const publicKey = await loadPublicKey();
         const code_v = new TextEncoder().encode(code_verifier);
