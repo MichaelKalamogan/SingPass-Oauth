@@ -173,8 +173,8 @@ async function loadPrivateKey() {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     console.log("response", response);
     // const { keys } = response.data;
-    response.data.d = process.env.RELYING_PARTY_PRIVATE_KEY;
-    return await parseJwk(response.data, process.env.SINGPASS_SIGNING_ALG);
+    response.d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    return await parseJwk(response, process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
     return e;
