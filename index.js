@@ -68,6 +68,7 @@ app.post("/token", async function (req, res) {
   try {
     const { client_id, client_secret, code, code_verifier, redirect_uri } =
       req.body;
+    console.log(client_id, client_secret, code, code_verifier, redirect_uri);
     if (!client_id || !client_secret) {
       return res.send(400, "missing client_id / client_secret");
     }
@@ -122,7 +123,7 @@ app.post("/token", async function (req, res) {
           return res.status(200).send(response.data);
         }
       } catch (error) {
-        console.log(error);
+        console.log(error.data?.message || error.message);
         if (error.response) {
           return res.status(error.response.status).send(error.response.data);
         } else {
