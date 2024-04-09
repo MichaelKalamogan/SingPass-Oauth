@@ -55,7 +55,7 @@ app.get("/auth", (req, res) => {
   }
 
   // Parse the URL
-  const urlObj = new URL(req.url);
+  const urlObj = new URL(req.url, "https://id.singpass.gov.sg");
 
   // Remove the client_id parameter
   urlObj.searchParams.delete("client_id");
@@ -64,6 +64,7 @@ app.get("/auth", (req, res) => {
   const modifiedUrl = urlObj.toString();
 
   const url = `https://id.singpass.gov.sg${modifiedUrl}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+  console.log(url);
   res.redirect(url);
 });
 
