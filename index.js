@@ -10,6 +10,8 @@ const qs = require("qs");
 const dotenv = require("dotenv");
 require("dotenv").config();
 const PORT = process.env.PORT || 7001;
+const { eopPublicKey } = require("./publicKey/publicKey");
+
 var app = express();
 
 app.use(bodyParser.json());
@@ -27,8 +29,9 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/ping", async (req, res) => {
-  return await loadPrivateKey();
+app.get("/ping", (req, res) => {
+  res.send("pong");
+  // return await loadPrivateKey();
 });
 
 /**
@@ -159,8 +162,8 @@ app.post("/verify", async function (req, res) {
 
 async function loadPrivateKey() {
   try {
-    const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
-    const dataObj = response.data;
+    // const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
+    const dataObj = eopPublicKey;
     console.log("dataobj", typeof dataObj);
     console.log("dataobjvalue", dataObj);
     dataObj.d = process.env.RELYING_PARTY_PRIVATE_KEY;
