@@ -8,8 +8,8 @@ const uuid = require("uuid");
 const axios = require("axios").default;
 const qs = require("qs");
 const dotenv = require("dotenv");
-const PORT = process.env.PORT || 5000;
 require("dotenv").config();
+const PORT = process.env.PORT || 7001;
 var app = express();
 
 app.use(bodyParser.json());
@@ -27,8 +27,8 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/ping", (req, res) => {
-  res.send("pong");
+app.get("/ping", async (req, res) => {
+  return await loadPrivateKey();
 });
 
 /**
@@ -108,7 +108,7 @@ app.post("/token", async function (req, res) {
           {
             issuer: context.data.ISSUER,
             audience: context.data.CLIENT_ID,
-          },
+          }
         );
         if (payload.nonce !== code_v_s256) {
           return res.send(400, "nonce mismatch");
@@ -160,10 +160,12 @@ app.post("/verify", async function (req, res) {
 async function loadPrivateKey() {
   try {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
-    // const { keys } = response.data;
-    response.data.d = process.env.RELYING_PARTY_PRIVATE_KEY;
-    console.log("response", response.data);
-    return await parseJwk(response.data, process.env.SINGPASS_SIGNING_ALG);
+    const dataObj = response.data;
+    console.log("dataobj", typeof dataObj);
+    console.log("dataobjvalue", dataObj);
+    dataObj.d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    console.log("response", dataObj);
+    return await parseJwk(dataObj, process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
     return e;
@@ -173,11 +175,11 @@ async function loadPrivateKey() {
 async function loadPublicKey() {
   try {
     const response = await axios.get(
-      `https://id.singpass.gov.sg/.well-known/keys`,
+      `https://id.singpass.gov.sg/.well-known/keys`
     );
     return await parseJwk(
       response.data.keys[0],
-      process.env.SINGPASS_SIGNING_ALG,
+      process.env.SINGPASS_SIGNING_ALG
     );
   } catch (e) {
     return e;
