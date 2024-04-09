@@ -171,7 +171,7 @@ app.post("/verify", async function (req, res) {
 async function loadPrivateKey() {
   try {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
-    console.log("response", response.data);
+    console.log("response", response);
     // const { keys } = response.data;
     response.data.d = process.env.RELYING_PARTY_PRIVATE_KEY;
     return await parseJwk(response.data, process.env.SINGPASS_SIGNING_ALG);
