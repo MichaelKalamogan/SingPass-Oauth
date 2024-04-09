@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const { SignJWT } = require("jose/jwt/sign");
 const { parseJwk } = require("jose/jwk/parse");
 const { jwtVerify } = require("jose/jwt/verify");
+const crypto = require("crypto");
 const uuid = require("uuid");
 const axios = require("axios").default;
 const qs = require("qs");
