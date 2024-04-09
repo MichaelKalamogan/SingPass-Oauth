@@ -38,7 +38,17 @@ app.get("/authorize", (req, res) => {
   if (process.env.AUTH0_CLIENT_ID !== req.query.client_id) {
     return res.send(401, "invalid client_id");
   }
-  var url = `https://${process.env.AUTH0_CUSTOM_DOMAIN}${req.url}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
+
+  // Parse the URL
+  const urlObj = new URL(req.url);
+
+  // Remove the client_id parameter
+  urlObj.searchParams.delete("client_id");
+
+  // Reconstruct the URL without the client_id parameter
+  const modifiedUrl = urlObj.toString();
+
+  const url = `https://${process.env.AUTH0_CUSTOM_DOMAIN}${modifiedUrl}&client_id=${process.env.SINGPASS_CLIENT_ID}&ndi_state=${req.query.state}&ndi_nonce=${req.query.code_challenge}&singpass=true`;
   res.redirect(url);
 });
 
