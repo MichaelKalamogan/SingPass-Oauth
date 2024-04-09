@@ -55,7 +55,7 @@ app.get("/auth", (req, res) => {
   }
 
   // Parse the URL
-  const urlObj = new URL(url);
+  const urlObj = new URL(req.url);
 
   // Remove the client_id parameter
   urlObj.searchParams.delete("client_id");
