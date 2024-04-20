@@ -185,7 +185,9 @@ async function loadPrivateKey() {
 
     keys[0].d = process.env.RELYING_PARTY_PRIVATE_KEY;
     console.log(keys[0]);
-    return await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
+    const key = await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
+    console.log("successfully parsed");
+    return key;
   } catch (e) {
     console.log(e);
     return e;
@@ -211,20 +213,22 @@ async function generatePrivateKeyJWT() {
   try {
     //const privateKeyPEM = crypto.createPrivateKey(config.PRIVATE_KEY.replace(/\\n/gm, '\n'));
     const key = await loadPrivateKey();
-    const jwt = await new SignJWT({})
-      .setProtectedHeader({
-        alg: process.env.SINGPASS_SIGNING_ALG,
-        kid: process.env.RELYING_PARTY_KID,
-        typ: "JWT",
-      })
-      .setIssuedAt()
+    console.log("privatekey generated");
+    const jwtheader = await new SignJWT({}).setProtectedHeader({
+      alg: process.env.SINGPASS_SIGNING_ALG,
+      kid: process.env.RELYING_PARTY_KID,
+      typ: "JWT",
+    });
+    const jwtSetIssuedAt = jwtheader.setIssuedAt();
+    console.log("setissuedAt");
+    const remaining = jwtSetIssuedAt
       .setIssuer(process.env.SINGPASS_CLIENT_ID)
       .setSubject(process.env.SINGPASS_CLIENT_ID)
       .setAudience(process.env.SINGPASS_ENVIRONMENT)
       .setExpirationTime("2m") // NDI will not accept tokens with an exp longer than 2 minutes since iat.
       .setJti(uuid.v4())
       .sign(key);
-    return jwt;
+    return remaining;
   } catch (error) {
     console.log(error);
     return error.message;
