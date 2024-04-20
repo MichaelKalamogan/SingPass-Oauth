@@ -172,9 +172,14 @@ app.post("/create-token", async (req, res) => {
 
 async function loadPrivateKey() {
   try {
+    console.log("making req", process.env.RELYING_PARTY_JWKS_ENDPOINT);
+    const response1 = await fetch(process.env.RELYING_PARTY_JWKS_ENDPOINT)
+      .fetch("https://jsonplaceholder.typicode.com/posts/1")
+      .then((response) => response.json());
+    console.log(response1);
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     const dataType = typeof response.data;
-    console.log(response.data, dataType);
+    console.log(response.data);
     let keys = [];
     if (dataType === "string") {
       const responseObj = JSON.parse(response.data);
