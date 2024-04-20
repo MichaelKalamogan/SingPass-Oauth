@@ -208,22 +208,27 @@ async function loadPublicKey() {
 }
 
 async function generatePrivateKeyJWT() {
-  //const privateKeyPEM = crypto.createPrivateKey(config.PRIVATE_KEY.replace(/\\n/gm, '\n'));
-  const key = await loadPrivateKey();
-  const jwt = await new SignJWT({})
-    .setProtectedHeader({
-      alg: process.env.SINGPASS_SIGNING_ALG,
-      kid: process.env.RELYING_PARTY_KID,
-      typ: "JWT",
-    })
-    .setIssuedAt()
-    .setIssuer(process.env.SINGPASS_CLIENT_ID)
-    .setSubject(process.env.SINGPASS_CLIENT_ID)
-    .setAudience(process.env.SINGPASS_ENVIRONMENT)
-    .setExpirationTime("2m") // NDI will not accept tokens with an exp longer than 2 minutes since iat.
-    .setJti(uuid.v4())
-    .sign(key);
-  return jwt;
+  try {
+    //const privateKeyPEM = crypto.createPrivateKey(config.PRIVATE_KEY.replace(/\\n/gm, '\n'));
+    const key = await loadPrivateKey();
+    const jwt = await new SignJWT({})
+      .setProtectedHeader({
+        alg: process.env.SINGPASS_SIGNING_ALG,
+        kid: process.env.RELYING_PARTY_KID,
+        typ: "JWT",
+      })
+      .setIssuedAt()
+      .setIssuer(process.env.SINGPASS_CLIENT_ID)
+      .setSubject(process.env.SINGPASS_CLIENT_ID)
+      .setAudience(process.env.SINGPASS_ENVIRONMENT)
+      .setExpirationTime("2m") // NDI will not accept tokens with an exp longer than 2 minutes since iat.
+      .setJti(uuid.v4())
+      .sign(key);
+    return jwt;
+  } catch (error) {
+    console.log(error);
+    return error.message;
+  }
 }
 
 app.listen(PORT, () => console.log(`Listening on ${PORT}`));
