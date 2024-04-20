@@ -31,6 +31,8 @@ app.use(function (req, res, next) {
 
 app.get("/ping", async (req, res) => {
   res.send("pong");
+  // const key = await loadPrivateKey();
+  // res.json(key);
 });
 
 /**
@@ -172,6 +174,7 @@ async function loadPrivateKey() {
   try {
     const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
     const dataType = typeof response.data;
+    console.log(response.data, dataType);
     let keys = [];
     if (dataType === "string") {
       const responseObj = JSON.parse(response.data);
@@ -181,6 +184,7 @@ async function loadPrivateKey() {
     }
 
     keys[0].d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    console.log(keys[0]);
     return await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
