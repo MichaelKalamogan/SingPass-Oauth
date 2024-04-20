@@ -213,7 +213,6 @@ async function generatePrivateKeyJWT() {
   try {
     //const privateKeyPEM = crypto.createPrivateKey(config.PRIVATE_KEY.replace(/\\n/gm, '\n'));
     const key = await loadPrivateKey();
-    console.log("privatekey generated");
     const jwtheader = await new SignJWT({}).setProtectedHeader({
       alg: process.env.SINGPASS_SIGNING_ALG,
       kid: process.env.RELYING_PARTY_KID,
@@ -228,6 +227,7 @@ async function generatePrivateKeyJWT() {
       .setExpirationTime("2m") // NDI will not accept tokens with an exp longer than 2 minutes since iat.
       .setJti(uuid.v4())
       .sign(key);
+    console.log("remaining", remaining);
     return remaining;
   } catch (error) {
     console.log(error);
