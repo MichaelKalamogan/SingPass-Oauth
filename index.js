@@ -7,12 +7,12 @@ const crypto = require("crypto");
 const uuid = require("uuid");
 const axios = require("axios").default;
 const qs = require("qs");
-const dotenv = require("dotenv");
 require("dotenv").config();
-const PORT = process.env.PORT || 7001;
-const { eopPublicKey } = require("./publicKey/publicKey");
+
+const { generateJwks } = require("./publicKey/publicKey");
 
 var app = express();
+const PORT = process.env.PORT || 7001;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -29,9 +29,8 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get("/ping", (req, res) => {
+app.get("/ping", async (req, res) => {
   res.send("pong");
-  // return await loadPrivateKey();
 });
 
 /**
@@ -57,6 +56,7 @@ app.get("/auth", (req, res) => {
     const modifiedUrl = urlObj.toString();
 
     const url = `${modifiedUrl}&client_id=${process.env.SINGPASS_CLIENT_ID}&state=${req.query.state}&nonce=${req.query.code_challenge}`;
+    console.log(url);
     res.redirect(url);
   } catch (error) {
     console.log(error);
@@ -68,7 +68,7 @@ app.post("/token", async function (req, res) {
   try {
     const { client_id, client_secret, code, code_verifier, redirect_uri } =
       req.body;
-    console.log(client_id, client_secret, code, code_verifier, redirect_uri);
+
     if (!client_id || !client_secret) {
       return res.send(400, "missing client_id / client_secret");
     }
@@ -94,9 +94,8 @@ app.post("/token", async function (req, res) {
       };
 
       try {
-        console.log("making request");
         const response = await axios.request(options);
-        console.log("response", response.data);
+
         const { id_token } = response.data;
         const publicKey = await loadPublicKey();
         const code_v = new TextEncoder().encode(code_verifier);
@@ -164,12 +163,25 @@ app.post("/verify", async function (req, res) {
   }
 });
 
+app.post("/create-token", async (req, res) => {
+  const keys = await generateJwks();
+  res.status(200).json(keys);
+});
+
 async function loadPrivateKey() {
   try {
-    // const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
-    const dataObj = eopPublicKey;
-    dataObj.d = process.env.RELYING_PARTY_PRIVATE_KEY;
-    return await parseJwk(dataObj, process.env.SINGPASS_SIGNING_ALG);
+    const response = await axios.get(process.env.RELYING_PARTY_JWKS_ENDPOINT);
+    const dataType = typeof response.data;
+    let keys = [];
+    if (dataType === "string") {
+      const responseObj = JSON.parse(response.data);
+      keys = responseObj.keys;
+    } else {
+      keys = response.data.keys;
+    }
+
+    keys[0].d = process.env.RELYING_PARTY_PRIVATE_KEY;
+    return await parseJwk(keys[0], process.env.SINGPASS_SIGNING_ALG);
   } catch (e) {
     console.log(e);
     return e;
